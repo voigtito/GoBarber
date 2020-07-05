@@ -4,28 +4,29 @@ import { Router, response } from 'express';
 //isEqual é para procurar no banco uma data igual a inserida
 import { startOfHour, parseISO, isEqual } from 'date-fns';
 import Appointment from '../models/Appointments';
+import AppointmentsRepository from '../repositories/AppointmentsRepository';
 
 const appointmentsRouter = Router();
 
-const appointments: Appointment[] = [];
+const appointmentsRepository = new AppointmentsRepository();
 
 appointmentsRouter.post('/', (request, response) => {
     const { provider, date } = request.body;
 
     const parsedDate = startOfHour(parseISO(date));
 
-    // vai percorrrer o banco para achar uma data igual ao parseDate recebido
-    const findAppointmentInSameDate = appointments.find(appointment =>
-        isEqual(parsedDate, appointment.date),
-    );
+    const findAppointmentInSameDate = appointmentsRepository.findByDate(
+        parsedDate
+        );
 
     if (findAppointmentInSameDate) {
-        return response.status(400).json({message: 'This appointment is already booked'})
+        return response
+            .status(400)
+            .json({ message: 'This appointment is already booked' })
     }
 
-    const appointment = new Appointment(provider, parsedDate);
+    const appointment = appointmentsRepository.create(provider, parsedDate);
 
-    appointments.push(appointment);
     return response.json(appointment);
 })
 
