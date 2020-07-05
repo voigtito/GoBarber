@@ -8,6 +8,10 @@ class AppointmentsRepository {
         this.appointments = [];
     }
 
+    public all(): Appointment[] {
+        return this.appointments;
+    }
+
     public findByDate(date: Date): Appointment | null {
         // vai percorrrer o banco para achar uma data igual ao parseDate recebido
         const findAppointment = this.appointments.find(appointment =>
