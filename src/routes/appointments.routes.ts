@@ -1,4 +1,5 @@
 import { Router, response } from 'express';
+import { getCustomRepository } from 'typeorm';
 // startOfHour zera a hora em que se está sendo feito o agendamento
 // parseISO converte a data do insomnia para uma Date do javascript
 //isEqual é para procurar no banco uma data igual a inserida
@@ -8,25 +9,25 @@ import AppointmentsRepository from '../repositories/AppointmentsRepository';
 import CreateAppointmentService from '../services/CreateAppointmentService';
 
 const appointmentsRouter = Router();
-const appointmentsRepository = new AppointmentsRepository();
 
-appointmentsRouter.get('/', (request, response) => {
-    const appointments = appointmentsRepository.all();
+appointmentsRouter.get('/', async (request, response) => {
+    const appointmentsRepository = getCustomRepository(AppointmentsRepository);
+    const appointments = await appointmentsRepository.find();
 
     return response.json(appointments)
 });
 
-appointmentsRouter.post('/', (request, response) => {
+appointmentsRouter.post('/', async (request, response) => {
     try {
         const { provider, date } = request.body;
-
+        
         const parsedDate = parseISO(date);
 
-        const createAppointment = new CreateAppointmentService(appointmentsRepository);
+        const createAppointment = new CreateAppointmentService();
 
-        const appointment = createAppointment.execute({ 
-            date: parsedDate, 
-            provider 
+        const appointment = await createAppointment.execute({
+            date: parsedDate,
+            provider
         });
 
         return response.json(appointment);
