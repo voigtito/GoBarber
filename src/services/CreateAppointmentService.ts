@@ -11,7 +11,7 @@ import { getCustomRepository } from 'typeorm';
 
  // Quando é no service se chama Request
  interface RequestDTO {
-    provider: string;
+    provider_id: string;
     date: Date;
  }
 
@@ -21,7 +21,7 @@ import { getCustomRepository } from 'typeorm';
 
 class CreateAppointmentService {
     // Todo service tem um único método chamado run ou execute (publico sempre)
-    public async execute({ provider, date}: RequestDTO): Promise<Appointment> {
+    public async execute({ provider_id, date}: RequestDTO): Promise<Appointment> {
 
         const appointmentsRepository = getCustomRepository(AppointmentsRepository);
 
@@ -37,7 +37,7 @@ class CreateAppointmentService {
         }
 
         const appointment = appointmentsRepository.create({
-            provider,
+            provider_id,
             date: appointmentDate,
         });
 

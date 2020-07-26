@@ -11,7 +11,7 @@ class User {
     @Column('varchar')
     password: string;
 
-    @Column('timestamp with time zone')
+    @Column('varchar')
     email: string;
 
     @CreateDateColumn()
