@@ -18,10 +18,10 @@ usersRouter.post('/', async (request, response) => {
 
         const createUser = new CreateUserService();
 
-        const user = await createUser.execute({name, email, password});
+        const user = await createUser.execute({ name, email, password });
 
         delete user.password;
-        
+
         return response.json(user);
     } catch (err) {
         return response.status(400).json({ error: err.message })
@@ -29,21 +29,18 @@ usersRouter.post('/', async (request, response) => {
 });
 
 // Patch usado para lateração de informação unica
-usersRouter.patch('/avatar', ensureAuthenticaded, upload.single('avatar'), async( request, response ) => {
-    try {
-        const updateUserAvatar = new UpdateUserAvatarService;
+usersRouter.patch('/avatar', ensureAuthenticaded, upload.single('avatar'), async (request, response) => {
 
-        const user = await updateUserAvatar.execute({
-            user_id: request.user.id,
-            avatarFilename: request.file.filename,
-        });
+    const updateUserAvatar = new UpdateUserAvatarService;
 
-        delete user.password;
+    const user = await updateUserAvatar.execute({
+        user_id: request.user.id,
+        avatarFilename: request.file.filename,
+    });
 
-        return response.json(user)
-    } catch (err) {
-        return response.status(400).json({error: err.message})
-    }
+    delete user.password;
+
+    return response.json(user)
 });
 
 export default usersRouter;

@@ -3,6 +3,8 @@ import { compare } from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import authConfig from '../config/auth'
 
+import AppError from '../errors/AppError';
+
 import User from '../models/User';
 
 interface Request {
@@ -25,14 +27,14 @@ class AuthenticateUserService {
         });
 
         if (!user) {
-            throw new Error('Incorrect email/password combination.');
+            throw new AppError('Incorrect email/password combination.', 401);
         }
 
         // Compare is a method from bcrypt that comapres the password given with the user bcrypted password from database in user
         const passwordMatched = await compare(password, user.password);
 
         if (!passwordMatched) {
-            throw new Error('Incorrect email/password combination.');
+            throw new AppError('Incorrect email/password combination.', 401);
         }
 
         /**
