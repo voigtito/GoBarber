@@ -1,7 +1,8 @@
 import React from 'react';
-import { Container } from './styles';
+import { useTransition } from 'react-spring';
 
-import {useToast, ToastMessage} from '../../context/ToastContext'
+import { Container } from './styles';
+import {ToastMessage} from '../../context/ToastContext'
 import { Toast } from './Toast/index'
 
 // Esta interface poderia ser importada, mas prefiro realizar assim (mais visual)
@@ -10,11 +11,20 @@ interface ToastContainerProps {
 }
 
 const ToastContaier: React.FC<ToastContainerProps> = ({messages}) => {
+    const messagesWithTransitions = useTransition(
+        messages, 
+        message => message.id,
+        {
+            from: { right: '-120%', opacity: 0 },
+            enter: { right: '0%', opacity: 1  },
+            leave: { right: '-120%', opacity: 0  }
+        }
+        )
 
     return (
         <Container>
-            {messages.map((message) => (
-                <Toast key={message.id} toast={message}/>
+            {messagesWithTransitions.map(({item, key, props}) => (
+                <Toast key={key} style={props} toast={item}/>
             ))}
         </Container>
     )
