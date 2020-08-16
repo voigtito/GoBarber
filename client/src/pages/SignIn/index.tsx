@@ -8,6 +8,7 @@ import * as Yup from 'yup';
 import getValidationErrors from '../../utils/getValidationErrors';
 
 import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../context/ToastContext'
 import logoImg from '../../assets/logoImg.svg';
 import Input from '../../components/input'
 import Button from '../../components/button'
@@ -20,9 +21,8 @@ interface SignInFormData {
 const SignIn: React.FC = () => {
 
     const formRef = useRef<FormHandles>(null);
-    const { user, signIn } = useAuth();
-
-    console.log(user);
+    const { signIn } = useAuth();
+    const { addToast } = useToast();
 
     // Toda variável externa usada dentro do useCallBack deve estar dentro do array do segundo parâmetro
     const handleSubmit = useCallback( async (data: SignInFormData) => {
@@ -38,7 +38,7 @@ const SignIn: React.FC = () => {
                 abortEarly: false,
             });
 
-            signIn({
+            await signIn({
                 email: data.email,
                 password: data.password,
             });
@@ -49,9 +49,13 @@ const SignIn: React.FC = () => {
             }
 
             // Set toast message
-            
+            addToast({
+                type: 'info',
+                title: 'Erro na autenticação',
+                description: 'Ocorreu um erro ao fazer login. cheque as credenciais.'
+            });
         }
-    }, [signIn]);
+    }, [signIn, addToast]);
 
     return (
     <Container>
