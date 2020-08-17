@@ -3,19 +3,31 @@ import { FiArrowLeft, FiMail, FiUser, FiLock } from 'react-icons/fi';
 import { FormHandles } from '@unform/core'
 import { Form } from '@unform/web';
 import * as Yup from 'yup';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
+import api from '../../services/apiClient';
+
+import { useToast } from '../../context/ToastContext'
 
 import getValidationErrors from '../../utils/getValidationErrors';
 import logoImg from '../../assets/logoImg.svg';
-import { Container, Content, Background, AnimationContainer } from './styles';
 import Input from '../../components/input'
 import Button from '../../components/button'
+import { Container, Content, Background, AnimationContainer } from './styles';
+
+interface SignUpFormData {
+    name: string;
+    email: string;
+    password: string;
+}
 
 const SignUp: React.FC = () => {
     // FormHandles para acessar as tipagens das funções
     const formRef = useRef<FormHandles>(null);
 
-    const handleSubmit = useCallback(async (data: object) => {
+    const { addToast } = useToast();
+    const history = useHistory();
+
+    const handleSubmit = useCallback(async (data: SignUpFormData) => {
         try {
             // Zerando os erros
             formRef.current?.setErrors({});
@@ -31,15 +43,40 @@ const SignUp: React.FC = () => {
                 abortEarly: false,
             });
 
+            await api.post('/users', data);
+
+            history.push('/');
+
+            addToast({
+                type: 'success',
+                title: 'Cadastro realizado!',
+                description: 'Você já pode fazer seu logon no GoBarber!'
+            });
+
         } catch (err) {
 
-            // Passa para a função de dentro de /utils onde faz o forEach para os erros
-            const errors = getValidationErrors(err);
+            // para validação de um objeto geralmente se cria um schema:
+            const schema = Yup.object().shape({
+                name: Yup.string().required('Nome obrigatório'),
+                email: Yup.string().required('E-mail obrigatório').email('Digite um e-mail válido'),
+                password: Yup.string().min(6, 'No mínimo 6 dígitos'),
+            });
 
-            // Retorna os erros para o formulário
-            formRef.current?.setErrors(errors);
+            await schema.validate(data, {
+                abortEarly: false,
+            });
+
+            await api.post('/users', data);
+
+            history.push('/');
+
+            addToast({
+                type: 'error',
+                title: 'Erro no cadastro',
+                description: 'Ocorreu um erro ao fazer cadastro, tente novamente.'
+            });
         }
-    }, []);
+    }, [addToast, history]);
 
     return (
         <Container>
