@@ -55,20 +55,11 @@ const SignUp: React.FC = () => {
 
         } catch (err) {
 
-            // para validação de um objeto geralmente se cria um schema:
-            const schema = Yup.object().shape({
-                name: Yup.string().required('Nome obrigatório'),
-                email: Yup.string().required('E-mail obrigatório').email('Digite um e-mail válido'),
-                password: Yup.string().min(6, 'No mínimo 6 dígitos'),
-            });
+            if (err instanceof Yup.ValidationError) {
+                const errors = getValidationErrors(err);
 
-            await schema.validate(data, {
-                abortEarly: false,
-            });
-
-            await api.post('/users', data);
-
-            history.push('/');
+                formRef.current?.setErrors(errors);
+            }
 
             addToast({
                 type: 'error',

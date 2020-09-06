@@ -6,12 +6,12 @@ import { FormHandles } from '@unform/core';
 import * as Yup from 'yup';
 import { Link, useHistory } from 'react-router-dom';
 
-import { useAuth } from '../../context/AuthContext'
-import { useToast } from '../../context/ToastContext'
+import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import getValidationErrors from '../../utils/getValidationErrors';
 import logoImg from '../../assets/logoImg.svg';
-import Input from '../../components/input'
-import Button from '../../components/button'
+import Input from '../../components/input';
+import Button from '../../components/button';
 import { Container, Content, Background, AnimationContainer } from './styles';
 
 interface SignInFormData {
