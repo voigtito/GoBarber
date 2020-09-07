@@ -4,9 +4,9 @@ import { getCustomRepository } from 'typeorm';
 // parseISO converte a data do insomnia para uma Date do javascript
 //isEqual é para procurar no banco uma data igual a inserida
 import { startOfHour, parseISO, isEqual } from 'date-fns';
-import Appointment from '../models/Appointments';
-import AppointmentsRepository from '../repositories/AppointmentsRepository';
-import CreateAppointmentService from '../services/CreateAppointmentService';
+import Appointment from '../../modules/appointments/entities/Appointments';
+import AppointmentsRepository from '../../modules/appointments/repositories/AppointmentsRepository';
+import CreateAppointmentService from '../../modules/appointments/services/CreateAppointmentService';
 
 import ensureAuthenticated from '../middlewares/ensureAuthenticated'
 
