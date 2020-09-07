@@ -10,6 +10,7 @@ import getValidationErrors from '../../utils/getValidationErrors';
 
 import Input from '../../components/Input';
 import Button from '../../components/Button';
+import api from '../../services/api';
 
 import logoImg from '../../assets/Logo.png';
 
@@ -42,6 +43,12 @@ const SignUp: React.FC = () => {
             await schema.validate(data, {
                 abortEarly: false,
             });
+            console.log('aqui')
+            await api.post('/users', data);
+            console.log('aqui2')
+            Alert.alert('Cadastro realizado com sucesso!', 'Você já pode fazer login')
+
+            navigation.goBack()
 
         } catch (err) {
 
@@ -53,7 +60,7 @@ const SignUp: React.FC = () => {
 
             Alert.alert('Erro no cadastro','Ocorreu um erro ao fazer cadastro, tente novamente.');
         }
-    }, []);
+    }, [navigation]);
 
     return (
         <>
