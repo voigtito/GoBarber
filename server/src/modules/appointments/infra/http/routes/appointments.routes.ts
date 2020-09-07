@@ -1,14 +1,13 @@
-import { Router, response } from 'express';
+import { Router } from 'express';
 import { getCustomRepository } from 'typeorm';
 // startOfHour zera a hora em que se está sendo feito o agendamento
 // parseISO converte a data do insomnia para uma Date do javascript
 //isEqual é para procurar no banco uma data igual a inserida
-import { startOfHour, parseISO, isEqual } from 'date-fns';
-import Appointment from '../../modules/appointments/entities/Appointments';
-import AppointmentsRepository from '../../modules/appointments/repositories/AppointmentsRepository';
-import CreateAppointmentService from '../../modules/appointments/services/CreateAppointmentService';
+import { parseISO } from 'date-fns';
+import AppointmentsRepository from '@modules/appointments/repositories/AppointmentsRepository';
+import CreateAppointmentService from '@modules/appointments/services/CreateAppointmentService';
 
-import ensureAuthenticated from '../middlewares/ensureAuthenticated'
+import ensureAuthenticated from '@modules/users/infra/http/middlewares/ensureAuthenticated'
 
 const appointmentsRouter = Router();
 
