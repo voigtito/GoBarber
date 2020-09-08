@@ -1,4 +1,5 @@
 import {startOfHour} from 'date-fns';
+import {inject, injectable} from 'tsyringe';
 
 import Appointment from '../infra/typeorm/entities/Appointments';
 import AppError from '@shared/errors/AppError';
@@ -16,10 +17,14 @@ import IAppointmentsRepository from '../repositories/IAppointmentsRepository';
     date: Date;
  }
 
+@injectable()
 class CreateAppointmentService {
 
     // declarando private antes do parametro, é a mesma coisa que declarar o atributo this. na classe
-    constructor( private appointmentsRepository: IAppointmentsRepository) {}
+    constructor(
+        @inject('AppointmentsRepository')
+        private appointmentsRepository: IAppointmentsRepository
+        ) {}
 
     // Todo service tem um único método chamado run ou execute (publico sempre)
     public async execute({ provider_id, date}: RequestDTO): Promise<Appointment> {
