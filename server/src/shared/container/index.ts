@@ -1,5 +1,7 @@
 import { container } from 'tsyringe';
 
+// TODO import igual o video
+import './providers';
 import IAppointmentsRepository from '@modules/appointments/repositories/IAppointmentsRepository';
 import AppointmentsRepository from '@modules/appointments/infra/typeorm/repositories/AppointmentsRepository';
 

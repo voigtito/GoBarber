@@ -7,6 +7,7 @@ import uploadConfig from '@config/upload';
 import upload from '@config/upload';
 import AppError from '@shared/errors/AppError';
 import IUsersRepository from '../repositories/IUsersRepository'
+import IStorageProvider from '@shared/container/providers/StorageProvider/models/IStorageProvider';
 
 interface IRequest {
     user_id: string;
@@ -17,7 +18,10 @@ interface IRequest {
 class UpdateUserAvatarService {
     constructor( 
         @inject('UserRepository')
-        private usersRepository: IUsersRepository
+        private usersRepository: IUsersRepository,
+
+        @inject('StorageProvider')
+        private storageProvider: IStorageProvider
         ) {}
 
     public async execute({ user_id, avatarFilename }: IRequest): Promise<User> {
@@ -29,19 +33,12 @@ class UpdateUserAvatarService {
         }
 
         if (user.avatar) {
-            // Deletar o avatar anterior
-            const userAvatarFilePath = path.join(uploadConfig.directory, user.avatar);
-
-            // File System do node. Realiza uma promise com a função stat para verificar se o arquivo existe
-            const userAvatarFileExists = await fs.promises.stat(userAvatarFilePath);
-
-            if (userAvatarFileExists) {
-                await fs.promises.unlink(userAvatarFilePath);
-            }
-            
+           await this.storageProvider.deleteFile(user.avatar);
         }
+        // se ele já tiver, ele vai salvar em cima
+        const filename = await this.storageProvider.saveFile(avatarFilename);
 
-        user.avatar = avatarFilename;
+        user.avatar = filename;
 
         // Método save() funciona para criar um usuário, mas também para atualizar as informações de um usuário.
         await this.usersRepository.save(user);
