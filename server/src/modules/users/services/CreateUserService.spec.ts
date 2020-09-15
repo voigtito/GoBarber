@@ -1,42 +1,51 @@
-import FakeUsersRepository from '../repositories/fakes/FakeUsersRepository';
-import FakeHashProvider from '../providers/HashProvider/fakes/FakeHashProvider';
-import CreateUserService from './CreateUserService';
 import AppError from '@shared/errors/AppError';
 
+import FakeUsersRepository from '@modules/users/repositories/fakes/FakeUsersRepository';
+import FakeHashProvider from '@modules/users/providers/HashProvider/fakes/FakeHashProvider';
+import FakeCacheProvider from '@shared/container/providers/CacheProvider/fakes/FakeCacheProvider';
+
+import CreateUserService from './CreateUserService';
+
+let fakeUsersRepository: FakeUsersRepository;
+let fakeHashProvider: FakeHashProvider;
+let createUser: CreateUserService;
+let fakeCacheProvider: FakeCacheProvider;
+
 describe('CreateUser', () => {
-    it('should be able to create a new user', async () => {
-        const fakeUsersRepository = new FakeUsersRepository();
-        const fakeHashProvider = new FakeHashProvider();
-        const createUser = new CreateUserService(fakeUsersRepository, fakeHashProvider);
+  beforeEach(() => {
+    fakeUsersRepository = new FakeUsersRepository();
+    fakeHashProvider = new FakeHashProvider();
+    fakeCacheProvider = new FakeCacheProvider();
+    createUser = new CreateUserService(
+      fakeUsersRepository,
+      fakeHashProvider,
+      fakeCacheProvider,
+    );
+  });
 
-        const appointment = await createUser.execute({
-            name: 'John Doe',
-            email: 'johndoe@example.com',
-            password: '123456'
-        });
-
-        // para verificar se foi criado, deve garantir as propriedades do appointment, para ver se foi criado
-        expect(appointment).toHaveProperty('id');
-
+  it('should be able to craete a new user', async () => {
+    const user = await createUser.execute({
+      name: 'John Doe',
+      email: 'johndoe@example.com',
+      password: '123456',
     });
 
-    it('should not be able to create a new user with the same email from another', async () => {
-        const fakeUsersRepository = new FakeUsersRepository();
-        const fakeHashProvider = new FakeHashProvider();
-        const createUser = new CreateUserService(fakeUsersRepository, fakeHashProvider);
+    expect(user).toHaveProperty('id');
+  });
 
-        await createUser.execute({
-            name: 'John Doe',
-            email: 'johndoe@example.com',
-            password: '123456'
-        });
-
-        // para verificar se foi criado, deve garantir as propriedades do appointment, para ver se foi criado
-        expect(createUser.execute({
-            name: 'John Doe',
-            email: 'johndoe@example.com',
-            password: '123456'
-        })).rejects.toBeInstanceOf(AppError);
-
+  it('should not be able to craete a new user with same email from another', async () => {
+    await createUser.execute({
+      name: 'John Doe',
+      email: 'johndoe@example.com',
+      password: '123456',
     });
+
+    await expect(
+      createUser.execute({
+        name: 'John Doe',
+        email: 'johndoe@example.com',
+        password: '123456',
+      }),
+    ).rejects.toBeInstanceOf(AppError);
+  });
 });

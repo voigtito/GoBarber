@@ -1,38 +1,55 @@
 import nodemailer, { Transporter } from 'nodemailer';
-import IMailProvider from '../models/IMailProvider';
+import { injectable, inject } from 'tsyringe';
 
-class EtherealMailProvider implements IMailProvider {
+import ISendMailDto from 'shared/container/providers/MailProvider/dtos/ISendMailDTO';
+import IMailProvider from '@shared/container/providers/MailProvider/models/IMailProvider';
 
-    private client: Transporter;
+import IMailTemplateProvider from '@shared/container/providers/MailTemplateProvider/models/IMailTemplateProvider';
 
-    constructor() {
-        nodemailer.createTestAccount().then( account => {
-            const transporter = nodemailer.createTransport({
-                host: account.smtp.host,
-                port: account.smtp.port,
-                secure: account.smtp.secure,
-                auth: {
-                    user: account.user,
-                    pass: account.pass,
-                }
-            });
-            this.client = transporter;
-            console.log(account)
-        });
+@injectable()
+export default class EtherealMailProvider implements IMailProvider {
+  private client: Transporter;
 
-    }
+  constructor(
+    @inject('MailTemplateProvider')
+    private mailTemplateProvider: IMailTemplateProvider,
+  ) {
+    nodemailer.createTestAccount().then(account => {
+      const transporter = nodemailer.createTransport({
+        host: account.smtp.host,
+        port: account.smtp.port,
+        secure: account.smtp.secure,
+        auth: {
+          user: account.user,
+          pass: account.pass,
+        },
+      });
 
-    public async sendMail(to:string, body: string): Promise<void> {
-        const message = await this.client.sendMail({
-            from: 'Equipe GoBarber <equipe@gobarber.com.br>',
-            to,
-            subject: 'Recuperação de Senha',
-            text: body,
-        });
+      this.client = transporter;
+    });
+  }
 
-        console.log(message.messageId)
-        console.log(nodemailer.getTestMessageUrl(message))
-    }
+  public async sendMail({
+    to,
+    from,
+    subject,
+    templateData,
+  }: ISendMailDto): Promise<void> {
+    const message = await this.client.sendMail({
+      from: {
+        name: from?.name || 'Equipe GoBarber',
+        address: from?.email || 'equipe@gobarber.com.br',
+      },
+      to: {
+        name: to.name,
+        address: to.email,
+      },
+      subject,
+      html: await this.mailTemplateProvider.parse(templateData),
+    });
+
+    /* eslint-disable no-console */
+    console.log(`Message sent: ${message.messageId}`);
+    console.log(`Preview URL: ${nodemailer.getTestMessageUrl(message)}`);
+  }
 }
-
-export default EtherealMailProvider;

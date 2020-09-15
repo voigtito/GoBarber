@@ -1,49 +1,50 @@
-import { inject, injectable} from 'tsyringe'
+import { injectable, inject } from 'tsyringe';
 
-import User from '../infra/typeorm/entities/User';
-import IHashProvider from '../providers/HashProvider/models/IHashProvider';
 import AppError from '@shared/errors/AppError';
-import IUsersRepository from '../repositories/IUsersRepository'
+import ICacheProvider from '@shared/container/providers/CacheProvider/models/ICacheProvider';
+import IUsersRepository from '@modules/users/repositories/IUsersRepository';
+import IHashProvider from '@modules/users/providers/HashProvider/models/IHashProvider';
+
+import User from '@modules/users/infra/typeorm/entities/User';
 
 interface IRequest {
-    name: string;
-    email: string;
-    password: string;
+  name: string;
+  email: string;
+  password: string;
 }
+
 @injectable()
 class CreateUserService {
-    constructor( 
-        @inject('UserRepository')
-        private usersRepository: IUsersRepository,
+  constructor(
+    @inject('UsersRepository')
+    private usersRepository: IUsersRepository,
 
-        @inject('HashProvider')
-        private hashProvider: IHashProvider,
-        ) {}
+    @inject('HashProvider')
+    private hashProvider: IHashProvider,
 
-    public async execute({name, email, password}: IRequest): Promise<User> {
+    @inject('CacheProvider')
+    private cacheProvider: ICacheProvider,
+  ) {}
 
-        // Will check if the user exists in database
-        const checkUserExists = await this.usersRepository.findByEmail(email);
+  async execute({ name, email, password }: IRequest): Promise<User> {
+    const checkUserExists = await this.usersRepository.findByEmail(email);
 
-        // Error in case the user exists
-        if (checkUserExists) {
-            throw new AppError('Email address already used.');
-        }
-
-        const hashedPassword = await this.hashProvider.generateHash(password);
-
-        // Create and store the user in a var
-        const user = await this.usersRepository.create({
-            name,
-            email,
-            password: hashedPassword
-        });
-
-        // Save the user created in the database
-        await this.usersRepository.save(user);
-
-        return user;
+    if (checkUserExists) {
+      throw new AppError('Email address already used.');
     }
+
+    const hashedPassword = await this.hashProvider.generateHash(password);
+
+    const user = await this.usersRepository.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    await this.cacheProvider.invalidatePrefix('providers-list');
+
+    return user;
+  }
 }
 
 export default CreateUserService;

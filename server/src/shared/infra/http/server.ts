@@ -1,38 +1,47 @@
 import 'reflect-metadata';
-import express, { Request, Response, NextFunction} from 'express';
+import 'dotenv/config';
+
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import { errors } from 'celebrate';
 import 'express-async-errors';
 
-import routes from './routes'
 import uploadConfig from '@config/upload';
 import AppError from '@shared/errors/AppError';
-import '@shared/infra/typeorm/database/index';
+import rateLimiter from '@shared/infra/http/middlewares/RateLimiter';
+import routes from './routes';
+
+import '@shared/infra/typeorm';
 import '@shared/container';
 
 const app = express();
 
-app.use(cors());
+app.use(cors({}));
 app.use(express.json());
-// This is to visualize the files from images
 app.use('/files', express.static(uploadConfig.uploadsFolder));
+app.use(rateLimiter);
 app.use(routes);
 
-app.use((err: Error, request: Request, response: Response, next: NextFunction) => {
-    if (err instanceof AppError){
-        return response.status(err.statusCode).json({
-            status: 'error',
-            message: err.message,
-        });
-    }
+app.use(errors());
 
-    console.error(err)
-    return response.status(500).json({
-        status: 'error',
-        message: 'Internal server error',
-    })
+app.use((err: Error, req: Request, res: Response, _: NextFunction) => {
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
+      status: 'error',
+      message: err.message,
+    });
+  }
+
+  // eslint-disable-next-line
+  console.error(err);
+
+  return res.status(500).json({
+    status: 'error',
+    message: 'Internal server error',
+  });
 });
 
 app.listen(3333, () => {
-    console.log('server started on port 3333')
+  // eslint-disable-next-line
+  console.log('⚡️ Server started on port 3333!');
 });
-

@@ -1,37 +1,39 @@
-import {Request, Response, NextFunction} from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { verify } from 'jsonwebtoken';
-import authConfig from '@config/auth'
+
+import authConfig from '@config/auth';
 import AppError from '@shared/errors/AppError';
 
-interface TokenPayload {
-    iat: number;
-    exp: number;
-    sub: string;
+interface ITokenPayload {
+  iat: number;
+  exp: number;
+  sub: string;
 }
 
-export default function ensureAuthenticated(request: Request, response: Response, next: NextFunction): void {
-    // Token Validation
-    const authHeader = request.headers.authorization;
+export default function ensureAuthenticated(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  const authHeader = req.headers.authorization;
 
-    if (!authHeader){
-        throw new AppError('JWT Token is missing', 401)
+  if (!authHeader) {
+    throw new AppError('JWT token is missing', 401);
+  }
+
+  const [, token] = authHeader.split(' ');
+
+  try {
+    const decoded = verify(token, authConfig.jwt.secret);
+
+    const { sub } = decoded as ITokenPayload;
+
+    req.user = {
+      id: sub,
     };
 
-    const [, token] = authHeader.split(' ');
-
-    try{       
-        const decodedToken = verify(token, authConfig.jwt.secret);
-
-        // force decodedToken to the var
-        const { sub } = decodedToken as TokenPayload;
-
-        request.user = {
-            id: sub,
-        };
-
-        // Next is a function that allows the user to go to the next step
-        return next();
-    } catch {
-        throw new AppError('Invalid JWT token', 401)
-    }
+    return next();
+  } catch {
+    throw new AppError('Invalid JWT token', 401);
+  }
 }
